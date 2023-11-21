@@ -27,8 +27,14 @@ func main() {
 	}
 	defer db.Close()
 
+	// создание таблицы
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name TEXT, email TEXT)")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// подключение
-	r := mux.NewRouter()
+	router := mux.NewRouter()
 	router.HandleFunc("/users", getUsers(db)).Methods("GET")
 	router.HandleFunc("/users/{id}", getUser(db)).Methods("GET")
 	router.HandleFunc("/users/", createUser(db)).Methods("POST")
@@ -42,7 +48,7 @@ func main() {
 func jsonContentTypeMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		next.ServerHTTP(w, r)
+		next.ServeHTTP(w, r)
 	})
 }
 
